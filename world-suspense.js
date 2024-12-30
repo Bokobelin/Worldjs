@@ -28,35 +28,27 @@ class SuspenseElement extends HTMLElement {
         <slot></slot>
       `;
     }
-  
+
     connectedCallback() {
       const slot = this.shadowRoot.querySelector('slot');
       const elements = slot.assignedElements();
       const delay = parseInt(this.getAttribute('delay') || '0', 10);
-      const progressive = this.hasAttribute('progressive');
-  
+
       if (elements.length === 0) {
         this.setLoading(true);
         return;
       }
-  
+
       this.setLoading(true);
-  
+
       this.delay(delay).then(() => {
-        if (progressive) {
-          this.classList.add('progressive');
           elements.forEach(el => this.waitForElement(el).then(() => {
             el.style.display = 'block';
           }));
           this.setLoading(false);
-        } else {
-          Promise.all(elements.map(el => this.waitForElement(el))).then(() => {
-            this.setLoading(false);
-          });
-        }
-      });
+        });
     }
-  
+
     waitForElement(element) {
       return new Promise(resolve => {
         if (element.tagName === 'IMG') {
@@ -71,11 +63,11 @@ class SuspenseElement extends HTMLElement {
         }
       });
     }
-  
+
     delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
-  
+
     setLoading(isLoading) {
       this.shadowRoot.querySelector('.loading').style.display = isLoading ? 'block' : 'none';
       this.classList.toggle('loaded', !isLoading);
@@ -83,4 +75,3 @@ class SuspenseElement extends HTMLElement {
   }
 
   customElements.define('world-suspense', SuspenseElement);
-  
